@@ -44,6 +44,46 @@ void apply(const rd::Context& ctx) {
       .on(RD_STATE_HOVER, rd::Style().box_shadow(0, 0, 0, glow, 5))
       .on(RD_STATE_ACTIVE, rd::Style().background(rd::hex(kPinkHi)).box_shadow(0, 0, 0, glow, 5));
 
+  cls(t->split_handle)
+      .set(rd::Style()
+               .width(6_px)
+               .background(rd::hex(kLine))
+               .cursor(RD_CURSOR_EW_RESIZE)
+               .focusable(RD_FOCUSABLE_TAB)
+               .transition_duration(120_ms)
+               .transition_easing(RD_EASING_EASE_OUT)
+               .transition_properties(RD_TRANSITION_COLOR))
+      .on(RD_STATE_HOVER, rd::Style().background(rd::hex(kHover)))
+      .on(RD_STATE_ACTIVE, rd::Style().background(rd::hex(kPink)))
+      .on(RD_STATE_FOCUS_VISIBLE, rd::Style().background(rd::hex(kPink)));
+
+  cls(t->number)
+      .set(rd::Style()
+               .flex_direction(RD_FLEX_ROW)
+               .width(96_px)
+               .border_width(1_px)
+               .border_color(rd::hex(kHover))
+               .border_radius(6_px)
+               .background(rd::hex(kBg))
+               .overflow_x(RD_OVERFLOW_HIDDEN)
+               .overflow_y(RD_OVERFLOW_HIDDEN)
+               .transition_duration(120_ms)
+               .transition_properties(RD_TRANSITION_COLOR))
+      .on(RD_STATE_HOVER, rd::Style().border_color(rd::hex(kSoft)))
+      .on(RD_STATE_FOCUS_WITHIN, rd::Style().border_color(rd::hex(kPink)));
+  cls(t->number_input)
+      .set(rd::Style().flex(1).min_width(0_px).padding(4_px, 8_px).color(rd::hex(kText)).white_space(RD_WHITE_SPACE_NOWRAP));
+  cls(t->number_steppers)
+      .set(rd::Style()
+               .width(18_px)
+               .flex_shrink(rd::num(0))
+               .border_width(0_px, 0_px, 0_px, 1_px)
+               .border_color(rd::hex(kHover))
+               .user_select(RD_USER_SELECT_NONE));
+  cls(t->number_step)
+      .on(RD_STATE_HOVER, rd::Style().background(rd::hex(kRaised)).color(rd::hex(kPink)))
+      .on(RD_STATE_ACTIVE, rd::Style().background(rd::hex(kHover)).color(rd::hex(kPinkHi)));
+
   cls(t->select)
       .set(rd::Style()
                .flex_direction(RD_FLEX_ROW)

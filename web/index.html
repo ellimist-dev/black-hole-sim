@@ -13,17 +13,16 @@
   </style>
 </head>
 <body>
+  <!-- A page for local testing. black-hole-sim.js is self-contained: it embeds the WebAssembly and
+       creates its own canvas if a page has none, so this markup is optional. -->
   <div id="status">// loading</div>
-  <canvas id="canvas" tabindex="-1"></canvas>
+  <canvas id="canvas"></canvas>
   <script>
-    const canvas = document.getElementById('canvas');
-    canvas.addEventListener('contextmenu', e => e.preventDefault());
     var Module = {
-      canvas,
-      onRuntimeInitialized() { document.getElementById('status').remove(); canvas.focus(); },
+      onRuntimeInitialized() { document.getElementById('status').remove(); Module.canvas.focus(); },
       setStatus(text) { if (text) document.getElementById('status')?.replaceChildren('// ' + text.toLowerCase()); },
     };
   </script>
-  {{{ SCRIPT }}}
+  <script src="black-hole-sim.js"></script>
 </body>
 </html>

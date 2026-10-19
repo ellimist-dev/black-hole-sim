@@ -16,9 +16,6 @@ func main() {
 	files := http.FileServer(http.Dir(*dir))
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		if r.URL.Path == "/" {
-			r.URL.Path = "/black-hole-sim.html"
-		}
 		w.Header().Set("Cache-Control", "no-store")
 		files.ServeHTTP(w, r)
 		log.Printf("%s %s %s", r.Method, r.URL.Path, time.Since(start).Round(time.Microsecond))

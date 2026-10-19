@@ -51,14 +51,20 @@ bool frame(Program& p) {
   ctx.update();
   float width  = static_cast<float>(GetScreenWidth()) / ctx.pixel_ratio();
   float height = static_cast<float>(GetScreenHeight()) / ctx.pixel_ratio();
+  // Screenshot harness: BH_CLICK=<x>,<y>[;<x>,<y>...] clicks and BH_KEYS=<letters> presses keys on the second frame.
   if (const char* c = std::getenv("BH_CLICK"); p.shot && c && p.frame == 1) {
-    char* end = nullptr;
-    float x   = std::strtof(c, &end);
-    float y   = std::strtof(end + 1, nullptr);
-    ctx.layout(width, height);
-    ctx.pointer(x, y, RD_BUTTON_PRIMARY);
-    ctx.pointer(x, y, 0);
+    while (*c) {
+      char* end = nullptr;
+      float x   = std::strtof(c, &end);
+      float y   = std::strtof(end + 1, &end);
+      ctx.layout(width, height);
+      ctx.pointer(x, y, RD_BUTTON_PRIMARY);
+      ctx.pointer(x, y, 0);
+      c = *end == ';' ? end + 1 : end;
+    }
   }
+  if (const char* k = std::getenv("BH_KEYS"); p.shot && k && p.frame == 1)
+    for (; *k >= 'a' && *k <= 'z'; k++) ctx.press(static_cast<rd_key>(RD_KEY_A + (*k - 'a')));
   ctx.layout(width, height);
   BeginDrawing();
   ClearBackground(BLACK);
@@ -84,7 +90,7 @@ int main() {  // NOLINT(bugprone-exception-escape): std::bad_alloc should termin
              static_cast<int>(EM_ASM_DOUBLE(return window.innerHeight;) * ratio), "black hole");
 #else
   SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
-  InitWindow(1280, 820, "black hole");
+  InitWindow(1280, 820, "Interactive Black Hole");
 #endif
   SetWindowMinSize(320, 480);
   if (const char* size = std::getenv("BH_SIZE")) {  // <w>,<h>, for screenshots

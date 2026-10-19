@@ -18,6 +18,10 @@ Needs CMake 3.25, a C23/C++20 compiler with `#embed` (Clang 19 or Apple Clang 17
 
 Drag the canvas to orbit the view and scroll to zoom. Space pauses, R resets, E drops the Earth.
 
+Drag the controls' edge to resize them; drag it most of the way closed, double-click it, or press C to put
+them away, and the tab on the canvas's edge (or C) brings them back. On a tall or narrow window the
+controls sit below the canvas.
+
 ## How it works
 
 `src/sim.cc` integrates test particles with leapfrog in the Paczynski-Wiita potential
@@ -34,8 +38,12 @@ the shadow, which gives trails.
 
 ## Web
 
-`just web` builds `build-web/black-hole-sim.{html,js,wasm}` with Emscripten (`emcmake` on the
-PATH); `just serve` also starts the small Go server in `serve/` (Go 1.24). The page's canvas fills
-the window and follows its size, so the layout switches to controls-below on a phone. The link
-runs at `-O1` with HTML minification off, which skips the passes that need Emscripten's npm
-packages; the code itself is compiled at `-O3`.
+`just web` builds `build-web/black-hole-sim.js` with Emscripten (`emcmake` on the PATH): one
+self-contained script with the WebAssembly embedded, about 1.4 MB. Include it in any page with
+`<script src="black-hole-sim.js"></script>`; it uses a `<canvas id="canvas">` if the page has one and
+otherwise adds a canvas filling the window. The canvas follows the window's size, so the layout
+switches to controls-below on a phone, and renders at the display's pixel density.
+
+`just serve` also copies `web/index.html` next to it and serves both with the small Go server in
+`serve/` (Go 1.27) at http://localhost:8080. The link runs at `-O1`, which skips the passes that
+need Emscripten's npm packages; the code itself is compiled at `-O3`.

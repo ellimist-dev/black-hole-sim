@@ -13,7 +13,7 @@ endif ()
 include(FetchContent)
 FetchContent_Declare(raydom
     GIT_REPOSITORY https://github.com/ellimist-dev/raydom.git
-    GIT_TAG        v0.2.3
+    GIT_TAG        v0.2.4
     GIT_SHALLOW    ON)
 FetchContent_MakeAvailable(raydom)
 
@@ -42,10 +42,13 @@ target_link_libraries(black-hole-sim PRIVATE raydom::extras)
 target_compile_options(black-hole-sim PRIVATE -Wall -Wextra -Wconversion --embed-dir=${FONT_DIR} -Wno-c23-extensions)
 set_source_files_properties(main.cc PROPERTIES OBJECT_DEPENDS "${FONT_DIR}/${FONT}")
 
-# The web build (just web): a page with the canvas filling it, driven by the browser's frames.
+# The web build (just web): one self-contained script, black-hole-sim.js, with the WebAssembly
+# embedded (SINGLE_FILE). It creates its own canvas when the page has none (web/pre.js), and the
+# browser drives its frames. web/index.html, copied next to it, is a page for local testing.
 if (EMSCRIPTEN)
-    set_target_properties(black-hole-sim PROPERTIES SUFFIX ".html")
-    target_link_options(black-hole-sim PRIVATE -O1 -sMINIFY_HTML=0 -sUSE_GLFW=3 -sALLOW_MEMORY_GROWTH=1
-                        --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/web/shell.html)
-    set_property(TARGET black-hole-sim APPEND PROPERTY LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/web/shell.html)
+    set_target_properties(black-hole-sim PROPERTIES SUFFIX ".js")
+    target_link_options(black-hole-sim PRIVATE -O1 -sSINGLE_FILE=1 -sENVIRONMENT=web -sUSE_GLFW=3
+                        -sALLOW_MEMORY_GROWTH=1 --pre-js ${CMAKE_CURRENT_SOURCE_DIR}/web/pre.js)
+    set_property(TARGET black-hole-sim APPEND PROPERTY LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/web/pre.js)
+    configure_file(web/index.html ${CMAKE_CURRENT_BINARY_DIR}/index.html COPYONLY)
 endif ()

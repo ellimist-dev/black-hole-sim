@@ -20,8 +20,14 @@ struct App {
   bool  dragging = false;
   float drag_x = 0, drag_y = 0;
 
-  rd::Node play_label, radii, incl_slider, incl_value;
+  rd::Node play_label, radii, incl_slider, incl_field;
   rd::Node stat_particles, stat_accreted, stat_rate, stat_fps;
+
+  // The controls: a collapsible pane beside the canvas, or under it on tall windows, and the button
+  // on the canvas's edge that opens them again.
+  rd::Node split, reopen;
+  rd_image open_side{}, open_bottom{};
+  bool     portrait = false;
 };
 
 // Builds the window's contents into the root.

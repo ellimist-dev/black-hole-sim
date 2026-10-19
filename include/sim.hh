@@ -16,12 +16,12 @@ constexpr float kRate   = 20;      // simulation time per second at 1x
 
 struct Params {
   float mass = 1, spin = 0.6f;
-  int   count = 12000;
+  int   count = 80000;
   float outer = 24, thickness = 0.04f, viscosity = 0.5f, turbulence = 0.3f, speed = 1;
   // The view, which the simulation reads to place the Earth in front of the camera.
-  float inclination = 78, azimuth = 0, zoom = 1.7f, size = 1.6f, exposure = 1, trails = 0.7f;
+  float inclination = 78, azimuth = 0, zoom = 1.7f, size = 1, exposure = 0.5f, trails = 0.97f;
   bool  lensing = true, beaming = true, redshift = true, ring = true, stars = true;
-  int   palette = 0;
+  int   palette = 2;  // Interstellar: an index into kPalettes
 };
 
 // The hole's radii for a mass and spin, in simulation units.
