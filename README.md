@@ -3,6 +3,8 @@
 A particle accretion disc around a spinning black hole, with gravitational lensing, Doppler beaming
 and an Earth to drop in. Built on [raydom](https://github.com/ellimist-dev/raydom) and raylib.
 
+![The simulation: a 100,000-particle disc glowing yellow-white around the black hole's shadow, its approaching side brightest, with the control panel on the left](assets/black-hole-sim-img.png)
+
 ```sh
 just run      # configure, build and run
 just serve    # build for the browser and serve it at http://localhost:8080

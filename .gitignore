@@ -4,3 +4,4 @@ build-web/
 build-web-local/
 .cache/
 *.png
+!assets/*.png
