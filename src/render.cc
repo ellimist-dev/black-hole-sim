@@ -250,6 +250,7 @@ void Renderer::paint(const Sim& sim, const rd_paint_info& info, double now) {
   faded_     = now;
   draw_layer(back_, true, keep, info.dpi);
   draw_layer(front_, false, keep, info.dpi);
+  rd_paint_restore(&info);  // EndTextureMode reset the transform
   clear_ = false;
 
   rd_paint_scissor(&info);

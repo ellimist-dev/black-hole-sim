@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>black hole</title>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #272822; }
+    /* The canvas holds device pixels; CSS shows it at the page's size. */
+    canvas { display: block; outline: none; width: 100vw; height: 100vh; }
+    #status { position: fixed; inset: 0; display: grid; place-items: center; color: #75715e;
+              font: 14px ui-monospace, Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <div id="status">// loading</div>
+  <canvas id="canvas" tabindex="-1"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+    var Module = {
+      canvas,
+      onRuntimeInitialized() { document.getElementById('status').remove(); canvas.focus(); },
+      setStatus(text) { if (text) document.getElementById('status')?.replaceChildren('// ' + text.toLowerCase()); },
+    };
+  </script>
+  {{{ SCRIPT }}}
+</body>
+</html>

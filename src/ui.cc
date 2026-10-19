@@ -135,25 +135,45 @@ rd::Node build_header(App& app, const Ui& ui) {
   primary.on(RD_STATE_HOVER, rd::Style().background(rd::hex(kPink)));
   primary.on(RD_STATE_ACTIVE, rd::Style().background(rd::hex(kPinkLo)));
 
+  // The title takes what's left after the buttons, cutting the subtitle short; below the title's own
+  // width, the buttons wrap to a second line.
   rd::Node header = ctx.create(rd::Style()
                                    .flex_direction(RD_FLEX_ROW)
+                                   .flex_wrap(RD_FLEX_WRAP)
                                    .align_items(RD_ALIGN_CENTER)
-                                   .column_gap(10_px)
+                                   .column_gap(16_px)
+                                   .row_gap(8_px)
                                    .padding(10_px, 16_px)
                                    .background(rd::hex(kPanel))
                                    .border_width(0_px, 0_px, 1_px, 0_px)
                                    .border_color(rd::hex(kLine)));
-  header.append(ctx.create(rd::Style().width(12_px).height(12_px).border_radius(6_px).background(rd::hex(kPink))));
-  header.append(ctx.create_text("Black Hole", rd::Style().font_size(18_px)));
-  header.append(ctx.create_text("// an accretion disc of particles around a Kerr black hole").add_class(ui.muted));
-  header.append(ctx.create(rd::Style().flex(1)));
+  rd::Node brand = ctx.create(rd::Style()
+                                  .flex_direction(RD_FLEX_ROW)
+                                  .align_items(RD_ALIGN_CENTER)
+                                  .column_gap(10_px)
+                                  .flex_grow(rd::num(1))
+                                  .flex_shrink(rd::num(1))
+                                  .flex_basis(140_px)
+                                  .min_width(0_px));
+  brand.append(ctx.create(rd::Style().width(12_px).height(12_px).border_radius(6_px).background(rd::hex(kPink)).flex_shrink(rd::num(0))));
+  brand.append(ctx.create_text("Black Hole", rd::Style().font_size(18_px).white_space(RD_WHITE_SPACE_NOWRAP).flex_shrink(rd::num(0))));
+  brand.append(ctx.create_text("// an accretion disc of particles around a Kerr black hole",
+                               rd::Style()
+                                   .flex_shrink(rd::num(1))
+                                   .min_width(0_px)
+                                   .white_space(RD_WHITE_SPACE_NOWRAP)
+                                   .text_overflow(RD_TEXT_OVERFLOW_ELLIPSIS)
+                                   .overflow_x(RD_OVERFLOW_HIDDEN))
+                   .add_class(ui.muted));
+  rd::Node actions = ctx.create(rd::Style().flex_direction(RD_FLEX_ROW).column_gap(8_px).flex_shrink(rd::num(0)));
+  header.append(brand).append(actions);
   rd::Node play  = button(ctx, btn, "Pause", &app.play_label).add_class(primary);
   rd::Node earth = button(ctx, btn, "Drop Earth");
   rd::Node again = button(ctx, btn, "Reset");
   rdx::tooltip(play, "Space");
   rdx::tooltip(earth, "Drop the Earth onto a plunging orbit, to be torn apart by tides (E)");
   rdx::tooltip(again, "R");
-  header.append(play).append(earth).append(again);
+  actions.append(play).append(earth).append(again);
   play.on_click([&app] { toggle_play(app); });
   earth.on_click([&app] { app.sim.drop_earth(app.renderer.extent()); });
   again.on_click([&app] { reset(app); });
@@ -162,13 +182,7 @@ rd::Node build_header(App& app, const Ui& ui) {
 
 rd::Node build_side(App& app, const Ui& ui) {
   const rd::Context& ctx  = app.ctx;
-  rd::Node           side = ctx.create(rd::Style()
-                                           .width(300_px)
-                                           .padding(0_px, 16_px)
-                                           .background(rd::hex(kPanel))
-                                           .border_width(0_px, 1_px, 0_px, 0_px)
-                                           .border_color(rd::hex(kLine))
-                                           .overflow_y(RD_OVERFLOW_SCROLL));
+  rd::Node           side = ctx.create();
   Params&            p    = app.sim.p;
   Sim&               sim  = app.sim;
 
@@ -222,7 +236,7 @@ rd::Node build_side(App& app, const Ui& ui) {
 
 rd::Node build_canvas(App& app, const Ui& ui) {
   const rd::Context& ctx  = app.ctx;
-  rd::Class          look = ctx.create_class(rd::Style().flex(1).min_width(0_px).background(rd::hex(kSpace)));
+  rd::Class          look = ctx.create_class(rd::Style().flex(1).min_width(0_px).min_height(0_px).background(rd::hex(kSpace)));
   look.on(RD_STATE_ACTIVE, rd::Style().cursor(RD_CURSOR_MOVE));
   rd::Node canvas = ctx.create().add_class(look);
   canvas.paint([&app](const rd_paint_info& info) { paint(app, info); });
@@ -300,8 +314,34 @@ void build_ui(App& app) {
     if (e.key() == RD_KEY_R) reset(app);
     if (e.key() == RD_KEY_E) app.sim.drop_earth(app.renderer.extent());
   });
-  rd::Node body = ctx.create(rd::Style().flex(1).min_height(0_px).flex_direction(RD_FLEX_ROW));
-  body.append(build_side(app, ui)).append(build_canvas(app, ui));
+  rd::Node body = ctx.create();
+  rd::Node side = build_side(app, ui);
+  body.append(side).append(build_canvas(app, ui));
   root.append(build_header(app, ui)).append(body);
+
+  // Wide windows put the controls in a column on the left; tall or narrow ones put them under the
+  // canvas, in as many columns as fit. Checked after each layout; a change lays out once more.
+  rd_tracks columns = ctx.tracks(rd::repeat(rd::auto_fill, {rd::minmax(240_px, 1_fr)}));
+  rd::Style panel   = rd::Style().padding(0_px, 16_px).background(rd::hex(kPanel)).border_color(rd::hex(kLine)).overflow_y(RD_OVERFLOW_SCROLL).flex_shrink(rd::num(0));
+  int       mode    = -1;
+  body.on_layout([body, side, root, columns, panel, mode]() mutable {
+    rd_rect r        = root.rect();
+    int     portrait = r.width < r.height || r.width < 640 ? 1 : 0;
+    if (portrait == mode) return;
+    mode = portrait;
+    if (portrait) {
+      body.style(rd::Style().flex(1).min_height(0_px).flex_direction(RD_FLEX_COLUMN_REVERSE));
+      side.style(rd::Style(panel)
+                     .height(rd::pct(42))
+                     .border_width(1_px, 0_px, 0_px, 0_px)
+                     .display(RD_DISPLAY_GRID)
+                     .grid_template_columns(columns)
+                     .column_gap(24_px)
+                     .align_content(RD_ALIGN_START));
+    } else {
+      body.style(rd::Style().flex(1).min_height(0_px).flex_direction(RD_FLEX_ROW));
+      side.style(rd::Style(panel).width(300_px).border_width(0_px, 1_px, 0_px, 0_px));
+    }
+  });
   reset(app);
 }

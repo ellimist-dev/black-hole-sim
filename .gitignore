@@ -1,4 +1,6 @@
 build/
 build-local/
+build-web/
+build-web-local/
 .cache/
 *.png

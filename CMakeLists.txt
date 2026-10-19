@@ -13,7 +13,7 @@ endif ()
 include(FetchContent)
 FetchContent_Declare(raydom
     GIT_REPOSITORY https://github.com/ellimist-dev/raydom.git
-    GIT_TAG        v0.2.2
+    GIT_TAG        v0.2.3
     GIT_SHALLOW    ON)
 FetchContent_MakeAvailable(raydom)
 
@@ -41,3 +41,11 @@ target_include_directories(black-hole-sim PRIVATE include)
 target_link_libraries(black-hole-sim PRIVATE raydom::extras)
 target_compile_options(black-hole-sim PRIVATE -Wall -Wextra -Wconversion --embed-dir=${FONT_DIR} -Wno-c23-extensions)
 set_source_files_properties(main.cc PROPERTIES OBJECT_DEPENDS "${FONT_DIR}/${FONT}")
+
+# The web build (just web): a page with the canvas filling it, driven by the browser's frames.
+if (EMSCRIPTEN)
+    set_target_properties(black-hole-sim PROPERTIES SUFFIX ".html")
+    target_link_options(black-hole-sim PRIVATE -O1 -sMINIFY_HTML=0 -sUSE_GLFW=3 -sALLOW_MEMORY_GROWTH=1
+                        --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/web/shell.html)
+    set_property(TARGET black-hole-sim APPEND PROPERTY LINK_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/web/shell.html)
+endif ()
