@@ -10,6 +10,8 @@ endif ()
 
 # raydom brings raylib: an installed raylib 6.0 if there is one, otherwise a download. Build against
 # a local checkout instead with -DFETCHCONTENT_SOURCE_DIR_RAYDOM=<path> (just local).
+# The sim doesn't use raydom's native file dialogs, which need libdbus on Linux.
+set(RAYDOM_FILE_DIALOG OFF)
 include(FetchContent)
 FetchContent_Declare(raydom
     GIT_REPOSITORY https://github.com/ellimist-dev/raydom.git
@@ -36,11 +38,18 @@ else ()
     endif ()
 endif ()
 
+# The font as a C array for main.cc to include: #embed would do this, but few compilers have it yet.
+set(FONT_INC "${CMAKE_BINARY_DIR}/generated/font.inc")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${FONT_DIR}/${FONT}")
+file(READ "${FONT_DIR}/${FONT}" font_hex HEX)
+string(REGEX REPLACE "(..)" "0x\\1," font_bytes "${font_hex}")
+string(REGEX REPLACE "((0x..,){32})" "\\1\n" font_bytes "${font_bytes}")
+file(CONFIGURE OUTPUT "${FONT_INC}" CONTENT "${font_bytes}\n")
+
 add_executable(black-hole-sim main.cc src/sim.cc src/render.cc src/theme.cc src/ui.cc)
-target_include_directories(black-hole-sim PRIVATE include)
+target_include_directories(black-hole-sim PRIVATE include "${CMAKE_BINARY_DIR}/generated")
 target_link_libraries(black-hole-sim PRIVATE raydom::extras)
-target_compile_options(black-hole-sim PRIVATE -Wall -Wextra -Wconversion --embed-dir=${FONT_DIR} -Wno-c23-extensions)
-set_source_files_properties(main.cc PROPERTIES OBJECT_DEPENDS "${FONT_DIR}/${FONT}")
+target_compile_options(black-hole-sim PRIVATE -Wall -Wextra -Wconversion)
 
 # The web build (just web): one self-contained script, black-hole-sim.js, with the WebAssembly
 # embedded (SINGLE_FILE). It creates its own canvas when the page has none (web/pre.js), and the

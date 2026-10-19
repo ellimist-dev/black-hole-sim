@@ -10,9 +10,32 @@ just run      # configure, build and run
 just serve    # build for the browser and serve it at http://localhost:8080
 ```
 
-Needs CMake 3.25, a C23/C++20 compiler with `#embed` (Clang 19 or Apple Clang 17), and
-[just](https://github.com/casey/just). The first configure downloads raydom (the tag pinned in
-`CMakeLists.txt`), raylib 6.0 through raydom unless one is installed, and the UI font.
+Without [just](https://github.com/casey/just): `cmake -S . -B build && cmake --build build`, then
+`./build/black-hole-sim`.
+
+## Requirements
+
+- CMake 3.25 or newer.
+- A C++20 compiler with `#embed`, which also builds raydom's C23:
+  - macOS: Apple Clang 17, from Xcode 16.3 or later or its Command Line Tools.
+  - Linux: Clang 19 or newer. GCC 15 has `#embed` too, but is untested.
+  - Windows: untested.
+- git and a network connection for the first configure, which downloads raydom (the tag pinned in
+  `CMakeLists.txt`), raylib 6.0 through raydom unless one is installed, and the UI font.
+- On Linux, raylib's X11 and OpenGL headers (on Debian and Ubuntu: `libx11-dev libxrandr-dev
+  libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev`) and `libdbus-1-dev` for raydom's file
+  dialogs. The sim doesn't use the dialogs; configure with `-DRAYDOM_FILE_DIALOG=OFF` to skip them.
+- For the web build: Emscripten (built with 4.0.9), with `emcmake` on the PATH, and Go 1.27 for
+  `just serve`.
+
+`c++: error: unsupported option '--embed-dir=...'` means the compiler predates `#embed`
+(`c++ --version` shows it). Update Xcode or the Command Line Tools, or use Homebrew's LLVM:
+
+```sh
+brew install llvm
+rm -rf build  # CMake keeps the compiler from the first configure
+CC=$(brew --prefix llvm)/bin/clang CXX=$(brew --prefix llvm)/bin/clang++ just build
+```
 
 ## Controls
 

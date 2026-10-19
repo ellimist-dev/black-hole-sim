@@ -18,7 +18,7 @@
 namespace {
 
 const unsigned char kFont[] = {
-#embed "anonymous_pro_bold.ttf"
+#include "font.inc"  // generated from the font file by CMakeLists.txt
 };
 
 // Everything the frames need, kept off main's stack: on the web, main returns while frames continue.
